@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html lang="no">
+
+    <head>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <link rel="stylesheet" href="ind.css">
+
+        <title></title>
+    </head>
+
+    <body>
+
+
+        <header>
+            <h1>
+                IT oppdrag
+            </h1>
+        </header>
+
+
+
+        <form id="skjema">
+            <article  class="inp">
+                <label for="inpDato">Dato: </label><br>
+                <input type="date" id="inpDato" required>
+            </article><br>
+    
+            <article  class="inp">
+                <label for="inpNavn">Navn: </label><br>
+                <input type="text" id="inpNavn" required placeholder="Peter">
+            </article><br>
+    
+            <article  class="inp">
+                <label for="inpNummer">Telefonnr: </label><br>
+                <input type="text" id="inpNummer" required placeholder="41520365">
+            </article><br>
+    
+            <article class="inp" >
+                <label for="inpEpost">E-post: </label><br>
+                <input type="email" id="inpEpost" required placeholder="Peter@gmail.com">
+            </article><br>
+
+            <article class="inp" >
+                <label for="inpBeskri">Beskrivelse: </label><br>
+                <input type="text" id="inpBeskri"  placeholder="***">
+            </article><br>
+    
+            <article  class="inpfil">
+                <label class="labelfil" for="inpFil">Velg bilde her</label><br>
+                <input type="file" id="inpFil" required>
+            </article><br><br>
+
+
+            <input class="sub" type= "submit" value="Registrer"></input>    
+
+        </form>
+
+        <div class="diva">
+            <a href="wireframe.html">Til wireframe</a>
+        </div>
+
+        <main>
+            <div id="main">
+            </div>
+        </main>
+
+        <footer>
+            <div id="">
+            </div>
+        </footer>
+
+
+
+        <!--Den er fra gstatic gjør at kode skal funger som det skal-->
+        <script src="https://www.gstatic.com/firebasejs/8.2.5/firebase.js"></script>
+        <script>
+
+            //firebase kode
+            const firebaseConfig = {
+            apiKey: "AIzaSyAQlFKs45_4p0hHjnqSorRdKVo0hUjXqPc",
+            authDomain: "leverer-16-12-2021.firebaseapp.com",
+            databaseURL: "https://leverer-16-12-2021-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "leverer-16-12-2021",
+            storageBucket: "leverer-16-12-2021.appspot.com",
+            messagingSenderId: "104342427490",
+            appId: "1:104342427490:web:e4ef7c940897fb3907be3b",
+            measurementId: "G-2NYXFKBDB8"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+
+            // HTML-element
+            const inpDato = document.querySelector("#inpDato");
+            const inpNavn = document.querySelector("#inpNavn");
+            const inpNummer = document.querySelector("#inpNummer");
+            const inpEpost = document.querySelector("#inpEpost");
+            const inpFil = document.querySelector("#inpFil");
+            const inpBeskri = document.querySelector("#inpBeskri");
+
+            const skjema = document.querySelector("#skjema");
+
+            const main = document.querySelector("#main");
+
+            // Firebase deling
+            const database = firebase.database();
+            const storage = firebase.storage();
+            
+            const bloggen = database.ref("bloggen");
+
+            // Funksjon som lagrer bilde i databasen
+            function lagreBilde(evt) {
+            evt.preventDefault();
+            
+            // Viser overlay
+
+            
+            // Bilde som skal lastast opp
+            const bilde = inpFil.files[0];
+            
+            // Kvar skal vi lagre bildet
+            const lagringsplass = storage.ref("bloggbilder/" + ( +new Date() ) + bilde.name);
+            
+            // Vi laster opp bildet til storage
+            lagringsplass.put(bilde)
+            .then( bilde => bilde.ref.getDownloadURL() )
+            .then( url => {
+
+                bloggen.push({
+                    url: url,
+                    dato: inpDato.value,
+                    navn: inpNavn.value,
+                    nummer: inpNummer.value,
+                    beskri: inpBeskri.value,
+                    epost: inpEpost.value
+                });
+
+                skjema.reset();
+
+            } );
+            
+            }
+
+            function visBilde(snap) {
+                const key = snap.key;
+                const data = snap.val();
+            
+                main.innerHTML = `<article><img src="${data.url}"><p>${data.dato}<br>${data.navn}<br>${data.nummer}<br>${data.epost}<br>${data.beskri}</p></article>` + main.innerHTML;
+            }
+            // Event Listeners
+	        skjema.addEventListener("submit", lagreBilde);
+	        bloggen.on("child_added", visBilde);
+        </script>
+
+    </body>
+</html>
